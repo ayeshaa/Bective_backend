@@ -16,9 +16,23 @@ namespace BeActive_API.Controllers
     {
 
         [EnableCors(origins: "*", headers: "*", methods: "*")]
-        public List<Property> GetProperties(string SearchType, string PropertyLocality)
+        public List<Property> GetProperties(string SearchType, string PropertyLocality, string PropertyType="", string MaxPrice="", int MinBeds=0, string SortBy ="", bool? SortDescending=false)
         {
-            var client = new RestClient("https://webservice.reapit.net/ura/rest/properties/general?SearchType=" + SearchType + "&PropertyLocality=" + PropertyLocality + "&Area=" + PropertyLocality + "&PropertyField=ID,PriceString,Image,SizeString,Type,TotalBedrooms,Address1,SizeString,Postcode,Status,InternalSaleStatus,Latitude,Longitude")
+            var URL = "https://webservice.reapit.net/ura/rest/properties/general?SearchType=" + SearchType + "&PropertyLocality=" + PropertyLocality + "&PropertyType="+ PropertyType  + "&Area=" + PropertyLocality + "&PropertyField=ID,PriceString,Image,SizeString,Type,TotalBedrooms,Address1,SizeString,Postcode,Status,InternalSaleStatus,Latitude,Longitude";
+            if(MaxPrice != null)
+            {
+                URL = URL + "&SortBy=Price&MaxPrice=" + MaxPrice;
+            }
+            URL = URL + "&MinBeds=" + MinBeds;
+            if(SortBy != null)
+            {
+                URL = URL + "&SortBy=" + SortBy;
+            }
+            if (SortDescending == true)
+            {
+                URL = URL + "&SortDescending=" + SortDescending;
+            }
+            var client = new RestClient(URL)
             {
                 Timeout = -1
             };
@@ -30,11 +44,16 @@ namespace BeActive_API.Controllers
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(response.Content);
             string jsonText = JsonConvert.SerializeXmlNode(doc);
+           // if(jsonText)
             try
             {
                 var p = JsonConvert.DeserializeObject<JSON>(jsonText);
                 var properties = p.Response.Property;
-                return properties.ToList();
+                if (properties != null)
+                {
+                    return properties.ToList();
+                }
+                return properties;
             }
             catch(Exception ex)
             {
@@ -173,24 +192,24 @@ namespace BeActive_API.Controllers
         //    //List<Property> p = new List<Property>();
         //    return p;
         //}
-        public string getToken()
-        {
-            var client = new RestClient("https://connect.reapit.cloud/token");
-            client.Timeout = -1;
-            var request = new RestRequest(Method.POST);
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-            request.AddHeader("Authorization", "Basic NXA3b3NmbnEzajltbDQwbzVlczFncmlwNHQ6NjBubXR0dmQzOTJsMDZ1cTFjamc0bzVsaThudmQ0ZjJpMm9xOHFpbWtxdjF2Zmtmb2Q0");
-            request.AddParameter("client_id", "5p7osfnq3j9ml40o5es1grip4t");
-            request.AddParameter("grant_type", "client_credentials");
-            request.AddHeader("reapit-customer", "SBOX");
-            IRestResponse response = client.Execute(request);
-            //AccessToken accessToken = response.Content;
-            Console.WriteLine(response.Content);
-            //token = response.Content.access_token;
-            Console.WriteLine();
-            AccessToken t = JsonConvert.DeserializeObject<AccessToken>(response.Content);
-            var token = t.access_token;
-            return t.access_token;
-        }
+        //public string getToken()
+        //{
+        //    var client = new RestClient("https://connect.reapit.cloud/token");
+        //    client.Timeout = -1;
+        //    var request = new RestRequest(Method.POST);
+        //    request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+        //    request.AddHeader("Authorization", "Basic NXA3b3NmbnEzajltbDQwbzVlczFncmlwNHQ6NjBubXR0dmQzOTJsMDZ1cTFjamc0bzVsaThudmQ0ZjJpMm9xOHFpbWtxdjF2Zmtmb2Q0");
+        //    request.AddParameter("client_id", "5p7osfnq3j9ml40o5es1grip4t");
+        //    request.AddParameter("grant_type", "client_credentials");
+        //    request.AddHeader("reapit-customer", "SBOX");
+        //    IRestResponse response = client.Execute(request);
+        //    //AccessToken accessToken = response.Content;
+        //    Console.WriteLine(response.Content);
+        //    //token = response.Content.access_token;
+        //    Console.WriteLine();
+        //    AccessToken t = JsonConvert.DeserializeObject<AccessToken>(response.Content);
+        //    var token = t.access_token;
+        //    return t.access_token;
+        //}
     }
 }

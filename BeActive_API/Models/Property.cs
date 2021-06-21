@@ -456,6 +456,10 @@ namespace BeActive_API.Models
         {
             get; set;
         }
+        public object error
+        {
+            get; set;
+        }
        
     }
 
